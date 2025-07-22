@@ -1,0 +1,5 @@
+[workspace]
+members = [
+    "crates/rknpu2",
+]
+resolver = "3"
