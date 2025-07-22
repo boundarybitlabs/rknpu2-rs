@@ -1,0 +1,558 @@
+pub const RKNN_FLAG_PRIOR_HIGH: u32 = 0;
+pub const RKNN_FLAG_PRIOR_MEDIUM: u32 = 1;
+pub const RKNN_FLAG_PRIOR_LOW: u32 = 2;
+pub const RKNN_FLAG_ASYNC_MASK: u32 = 4;
+pub const RKNN_FLAG_COLLECT_PERF_MASK: u32 = 8;
+pub const RKNN_FLAG_MEM_ALLOC_OUTSIDE: u32 = 16;
+pub const RKNN_FLAG_SHARE_WEIGHT_MEM: u32 = 32;
+pub const RKNN_FLAG_FENCE_IN_OUTSIDE: u32 = 64;
+pub const RKNN_FLAG_FENCE_OUT_OUTSIDE: u32 = 128;
+pub const RKNN_FLAG_COLLECT_MODEL_INFO_ONLY: u32 = 256;
+pub const RKNN_FLAG_INTERNAL_ALLOC_OUTSIDE: u32 = 512;
+pub const RKNN_FLAG_EXECUTE_FALLBACK_PRIOR_DEVICE_GPU: u32 = 1024;
+pub const RKNN_FLAG_ENABLE_SRAM: u32 = 2048;
+pub const RKNN_FLAG_SHARE_SRAM: u32 = 4096;
+pub const RKNN_FLAG_DISABLE_PROC_HIGH_PRIORITY: u32 = 8192;
+pub const RKNN_SUCC: u32 = 0;
+pub const RKNN_ERR_FAIL: i32 = -1;
+pub const RKNN_ERR_TIMEOUT: i32 = -2;
+pub const RKNN_ERR_DEVICE_UNAVAILABLE: i32 = -3;
+pub const RKNN_ERR_MALLOC_FAIL: i32 = -4;
+pub const RKNN_ERR_PARAM_INVALID: i32 = -5;
+pub const RKNN_ERR_MODEL_INVALID: i32 = -6;
+pub const RKNN_ERR_CTX_INVALID: i32 = -7;
+pub const RKNN_ERR_INPUT_INVALID: i32 = -8;
+pub const RKNN_ERR_OUTPUT_INVALID: i32 = -9;
+pub const RKNN_ERR_DEVICE_UNMATCH: i32 = -10;
+pub const RKNN_ERR_INCOMPATILE_PRE_COMPILE_MODEL: i32 = -11;
+pub const RKNN_ERR_INCOMPATILE_OPTIMIZATION_LEVEL_VERSION: i32 = -12;
+pub const RKNN_ERR_TARGET_PLATFORM_UNMATCH: i32 = -13;
+pub const RKNN_MAX_DIMS: u32 = 16;
+pub const RKNN_MAX_NUM_CHANNEL: u32 = 15;
+pub const RKNN_MAX_NAME_LEN: u32 = 256;
+pub const RKNN_MAX_DYNAMIC_SHAPE_NUM: u32 = 512;
+pub const RKNN_CUSTOM_OP_MAX_STR_LEN: u32 = 64;
+pub const RKNN_CUSTOM_OP_MAX_VALUE_LEN: u32 = 32;
+pub type rknn_context = u64;
+pub mod _rknn_query_cmd {
+    pub type Type = ::std::os::raw::c_uint;
+    pub const RKNN_QUERY_IN_OUT_NUM: Type = 0;
+    pub const RKNN_QUERY_INPUT_ATTR: Type = 1;
+    pub const RKNN_QUERY_OUTPUT_ATTR: Type = 2;
+    pub const RKNN_QUERY_PERF_DETAIL: Type = 3;
+    pub const RKNN_QUERY_PERF_RUN: Type = 4;
+    pub const RKNN_QUERY_SDK_VERSION: Type = 5;
+    pub const RKNN_QUERY_MEM_SIZE: Type = 6;
+    pub const RKNN_QUERY_CUSTOM_STRING: Type = 7;
+    pub const RKNN_QUERY_NATIVE_INPUT_ATTR: Type = 8;
+    pub const RKNN_QUERY_NATIVE_OUTPUT_ATTR: Type = 9;
+    pub const RKNN_QUERY_NATIVE_NC1HWC2_INPUT_ATTR: Type = 8;
+    pub const RKNN_QUERY_NATIVE_NC1HWC2_OUTPUT_ATTR: Type = 9;
+    pub const RKNN_QUERY_NATIVE_NHWC_INPUT_ATTR: Type = 10;
+    pub const RKNN_QUERY_NATIVE_NHWC_OUTPUT_ATTR: Type = 11;
+    pub const RKNN_QUERY_DEVICE_MEM_INFO: Type = 12;
+    pub const RKNN_QUERY_INPUT_DYNAMIC_RANGE: Type = 13;
+    pub const RKNN_QUERY_CURRENT_INPUT_ATTR: Type = 14;
+    pub const RKNN_QUERY_CURRENT_OUTPUT_ATTR: Type = 15;
+    pub const RKNN_QUERY_CURRENT_NATIVE_INPUT_ATTR: Type = 16;
+    pub const RKNN_QUERY_CURRENT_NATIVE_OUTPUT_ATTR: Type = 17;
+    pub const RKNN_QUERY_CMD_MAX: Type = 18;
+}
+pub use self::_rknn_query_cmd::Type as rknn_query_cmd;
+pub mod _rknn_tensor_type {
+    pub type Type = ::std::os::raw::c_uint;
+    pub const RKNN_TENSOR_FLOAT32: Type = 0;
+    pub const RKNN_TENSOR_FLOAT16: Type = 1;
+    pub const RKNN_TENSOR_INT8: Type = 2;
+    pub const RKNN_TENSOR_UINT8: Type = 3;
+    pub const RKNN_TENSOR_INT16: Type = 4;
+    pub const RKNN_TENSOR_UINT16: Type = 5;
+    pub const RKNN_TENSOR_INT32: Type = 6;
+    pub const RKNN_TENSOR_UINT32: Type = 7;
+    pub const RKNN_TENSOR_INT64: Type = 8;
+    pub const RKNN_TENSOR_BOOL: Type = 9;
+    pub const RKNN_TENSOR_INT4: Type = 10;
+    pub const RKNN_TENSOR_TYPE_MAX: Type = 11;
+}
+pub use self::_rknn_tensor_type::Type as rknn_tensor_type;
+pub mod _rknn_tensor_qnt_type {
+    pub type Type = ::std::os::raw::c_uint;
+    pub const RKNN_TENSOR_QNT_NONE: Type = 0;
+    pub const RKNN_TENSOR_QNT_DFP: Type = 1;
+    pub const RKNN_TENSOR_QNT_AFFINE_ASYMMETRIC: Type = 2;
+    pub const RKNN_TENSOR_QNT_MAX: Type = 3;
+}
+pub use self::_rknn_tensor_qnt_type::Type as rknn_tensor_qnt_type;
+pub mod _rknn_tensor_format {
+    pub type Type = ::std::os::raw::c_uint;
+    pub const RKNN_TENSOR_NCHW: Type = 0;
+    pub const RKNN_TENSOR_NHWC: Type = 1;
+    pub const RKNN_TENSOR_NC1HWC2: Type = 2;
+    pub const RKNN_TENSOR_UNDEFINED: Type = 3;
+    pub const RKNN_TENSOR_FORMAT_MAX: Type = 4;
+}
+pub use self::_rknn_tensor_format::Type as rknn_tensor_format;
+pub mod _rknn_core_mask {
+    pub type Type = ::std::os::raw::c_uint;
+    pub const RKNN_NPU_CORE_AUTO: Type = 0;
+    pub const RKNN_NPU_CORE_0: Type = 1;
+    pub const RKNN_NPU_CORE_1: Type = 2;
+    pub const RKNN_NPU_CORE_2: Type = 4;
+    pub const RKNN_NPU_CORE_0_1: Type = 3;
+    pub const RKNN_NPU_CORE_0_1_2: Type = 7;
+    pub const RKNN_NPU_CORE_UNDEFINED: Type = 8;
+}
+pub use self::_rknn_core_mask::Type as rknn_core_mask;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _rknn_input_output_num {
+    pub n_input: u32,
+    pub n_output: u32,
+}
+pub type rknn_input_output_num = _rknn_input_output_num;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _rknn_tensor_attr {
+    pub index: u32,
+    pub n_dims: u32,
+    pub dims: [u32; 16usize],
+    pub name: [::std::os::raw::c_char; 256usize],
+    pub n_elems: u32,
+    pub size: u32,
+    pub fmt: rknn_tensor_format,
+    pub type_: rknn_tensor_type,
+    pub qnt_type: rknn_tensor_qnt_type,
+    pub fl: i8,
+    pub zp: i32,
+    pub scale: f32,
+    pub w_stride: u32,
+    pub size_with_stride: u32,
+    pub pass_through: u8,
+    pub h_stride: u32,
+}
+pub type rknn_tensor_attr = _rknn_tensor_attr;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _rknn_input_range {
+    pub index: u32,
+    pub shape_number: u32,
+    pub fmt: rknn_tensor_format,
+    pub name: [::std::os::raw::c_char; 256usize],
+    pub dyn_range: [[u32; 16usize]; 512usize],
+    pub n_dims: u32,
+}
+pub type rknn_input_range = _rknn_input_range;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _rknn_perf_detail {
+    pub perf_data: *mut ::std::os::raw::c_char,
+    pub data_len: u64,
+}
+pub type rknn_perf_detail = _rknn_perf_detail;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _rknn_perf_run {
+    pub run_duration: i64,
+}
+pub type rknn_perf_run = _rknn_perf_run;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _rknn_sdk_version {
+    pub api_version: [::std::os::raw::c_char; 256usize],
+    pub drv_version: [::std::os::raw::c_char; 256usize],
+}
+pub type rknn_sdk_version = _rknn_sdk_version;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _rknn_mem_size {
+    pub total_weight_size: u32,
+    pub total_internal_size: u32,
+    pub total_dma_allocated_size: u64,
+    pub total_sram_size: u32,
+    pub free_sram_size: u32,
+    pub reserved: [u32; 10usize],
+}
+pub type rknn_mem_size = _rknn_mem_size;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _rknn_custom_string {
+    pub string: [::std::os::raw::c_char; 1024usize],
+}
+pub type rknn_custom_string = _rknn_custom_string;
+pub mod _rknn_tensor_mem_flags {
+    pub type Type = ::std::os::raw::c_uint;
+    pub const RKNN_TENSOR_MEMORY_FLAGS_ALLOC_INSIDE: Type = 1;
+    pub const RKNN_TENSOR_MEMORY_FLAGS_FROM_FD: Type = 2;
+    pub const RKNN_TENSOR_MEMORY_FLAGS_FROM_PHYS: Type = 3;
+    pub const RKNN_TENSOR_MEMORY_FLAGS_UNKNOWN: Type = 4;
+}
+pub use self::_rknn_tensor_mem_flags::Type as rknn_tensor_mem_flags;
+pub mod _rknn_mem_sync_mode {
+    pub type Type = ::std::os::raw::c_uint;
+    pub const RKNN_MEMORY_SYNC_TO_DEVICE: Type = 1;
+    pub const RKNN_MEMORY_SYNC_FROM_DEVICE: Type = 2;
+    pub const RKNN_MEMORY_SYNC_BIDIRECTIONAL: Type = 3;
+}
+pub use self::_rknn_mem_sync_mode::Type as rknn_mem_sync_mode;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _rknn_tensor_memory {
+    pub virt_addr: *mut ::std::os::raw::c_void,
+    pub phys_addr: u64,
+    pub fd: i32,
+    pub offset: i32,
+    pub size: u32,
+    pub flags: u32,
+    pub priv_data: *mut ::std::os::raw::c_void,
+}
+pub type rknn_tensor_mem = _rknn_tensor_memory;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _rknn_input {
+    pub index: u32,
+    pub buf: *mut ::std::os::raw::c_void,
+    pub size: u32,
+    pub pass_through: u8,
+    pub type_: rknn_tensor_type,
+    pub fmt: rknn_tensor_format,
+}
+pub type rknn_input = _rknn_input;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _rknn_output {
+    pub want_float: u8,
+    pub is_prealloc: u8,
+    pub index: u32,
+    pub buf: *mut ::std::os::raw::c_void,
+    pub size: u32,
+}
+pub type rknn_output = _rknn_output;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _rknn_init_extend {
+    pub ctx: rknn_context,
+    pub real_model_offset: i32,
+    pub real_model_size: u32,
+    pub reserved: [u8; 120usize],
+}
+pub type rknn_init_extend = _rknn_init_extend;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _rknn_run_extend {
+    pub frame_id: u64,
+    pub non_block: i32,
+    pub timeout_ms: i32,
+    pub fence_fd: i32,
+}
+pub type rknn_run_extend = _rknn_run_extend;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _rknn_output_extend {
+    pub frame_id: u64,
+}
+pub type rknn_output_extend = _rknn_output_extend;
+unsafe extern "C" {
+    pub fn rknn_init(
+        context: *mut rknn_context,
+        model: *mut ::std::os::raw::c_void,
+        size: u32,
+        flag: u32,
+        extend: *mut rknn_init_extend,
+    ) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn rknn_dup_context(
+        context_in: *mut rknn_context,
+        context_out: *mut rknn_context,
+    ) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn rknn_destroy(context: rknn_context) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn rknn_query(
+        context: rknn_context,
+        cmd: rknn_query_cmd,
+        info: *mut ::std::os::raw::c_void,
+        size: u32,
+    ) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn rknn_inputs_set(
+        context: rknn_context,
+        n_inputs: u32,
+        inputs: *mut rknn_input,
+    ) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn rknn_set_batch_core_num(
+        context: rknn_context,
+        core_num: ::std::os::raw::c_int,
+    ) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn rknn_set_core_mask(
+        context: rknn_context,
+        core_mask: rknn_core_mask,
+    ) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn rknn_run(context: rknn_context, extend: *mut rknn_run_extend) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn rknn_wait(context: rknn_context, extend: *mut rknn_run_extend) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn rknn_outputs_get(
+        context: rknn_context,
+        n_outputs: u32,
+        outputs: *mut rknn_output,
+        extend: *mut rknn_output_extend,
+    ) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn rknn_outputs_release(
+        context: rknn_context,
+        n_ouputs: u32,
+        outputs: *mut rknn_output,
+    ) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn rknn_create_mem_from_phys(
+        ctx: rknn_context,
+        phys_addr: u64,
+        virt_addr: *mut ::std::os::raw::c_void,
+        size: u32,
+    ) -> *mut rknn_tensor_mem;
+}
+unsafe extern "C" {
+    pub fn rknn_create_mem_from_fd(
+        ctx: rknn_context,
+        fd: i32,
+        virt_addr: *mut ::std::os::raw::c_void,
+        size: u32,
+        offset: i32,
+    ) -> *mut rknn_tensor_mem;
+}
+unsafe extern "C" {
+    pub fn rknn_create_mem_from_mb_blk(
+        ctx: rknn_context,
+        mb_blk: *mut ::std::os::raw::c_void,
+        offset: i32,
+    ) -> *mut rknn_tensor_mem;
+}
+unsafe extern "C" {
+    pub fn rknn_create_mem(ctx: rknn_context, size: u32) -> *mut rknn_tensor_mem;
+}
+unsafe extern "C" {
+    pub fn rknn_destroy_mem(ctx: rknn_context, mem: *mut rknn_tensor_mem) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn rknn_set_weight_mem(
+        ctx: rknn_context,
+        mem: *mut rknn_tensor_mem,
+    ) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn rknn_set_internal_mem(
+        ctx: rknn_context,
+        mem: *mut rknn_tensor_mem,
+    ) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn rknn_set_io_mem(
+        ctx: rknn_context,
+        mem: *mut rknn_tensor_mem,
+        attr: *mut rknn_tensor_attr,
+    ) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn rknn_set_input_shape(
+        ctx: rknn_context,
+        attr: *mut rknn_tensor_attr,
+    ) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn rknn_set_input_shapes(
+        ctx: rknn_context,
+        n_inputs: u32,
+        attr: *mut rknn_tensor_attr,
+    ) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn rknn_mem_sync(
+        context: rknn_context,
+        mem: *mut rknn_tensor_mem,
+        mode: rknn_mem_sync_mode,
+    ) -> ::std::os::raw::c_int;
+}
+pub type rknn_matmul_ctx = rknn_context;
+pub mod _rknn_matmul_type {
+    pub type Type = ::std::os::raw::c_uint;
+    pub const RKNN_FLOAT16_MM_FLOAT16_TO_FLOAT32: Type = 1;
+    pub const RKNN_INT8_MM_INT8_TO_INT32: Type = 2;
+    pub const RKNN_INT4_MM_INT4_TO_INT16: Type = 10;
+}
+pub use self::_rknn_matmul_type::Type as rknn_matmul_type;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _rknn_matmul_tensor_attr {
+    pub name: [::std::os::raw::c_char; 256usize],
+    pub n_dims: u32,
+    pub dims: [u32; 16usize],
+    pub size: u32,
+    pub type_: rknn_tensor_type,
+}
+pub type rknn_matmul_tensor_attr = _rknn_matmul_tensor_attr;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _rknn_matmul_io_attr {
+    pub A: rknn_matmul_tensor_attr,
+    pub B: rknn_matmul_tensor_attr,
+    pub C: rknn_matmul_tensor_attr,
+}
+pub type rknn_matmul_io_attr = _rknn_matmul_io_attr;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct rknn_matmul_info_t {
+    pub M: i32,
+    pub K: i32,
+    pub N: i32,
+    pub type_: rknn_matmul_type,
+    pub B_layout: i32,
+    pub AC_layout: i32,
+}
+pub type rknn_matmul_info = rknn_matmul_info_t;
+unsafe extern "C" {
+    pub fn rknn_matmul_create(
+        ctx: *mut rknn_matmul_ctx,
+        info: *mut rknn_matmul_info,
+        io_attr: *mut rknn_matmul_io_attr,
+    ) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn rknn_matmul_set_io_mem(
+        ctx: rknn_matmul_ctx,
+        mem: *mut rknn_tensor_mem,
+        attr: *mut rknn_matmul_tensor_attr,
+    ) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn rknn_matmul_set_core_mask(
+        context: rknn_matmul_ctx,
+        core_mask: rknn_core_mask,
+    ) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn rknn_matmul_run(ctx: rknn_matmul_ctx) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn rknn_matmul_destroy(ctx: rknn_matmul_ctx) -> ::std::os::raw::c_int;
+}
+pub type rknn_custom_op_interal_context = u64;
+pub mod _rknn_target_type {
+    pub type Type = ::std::os::raw::c_uint;
+    pub const RKNN_TARGET_TYPE_CPU: Type = 1;
+    pub const RKNN_TARGET_TYPE_GPU: Type = 2;
+    pub const RKNN_TARGET_TYPE_MAX: Type = 3;
+}
+pub use self::_rknn_target_type::Type as rknn_target_type;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _rknn_gpu_op_context {
+    pub cl_context: *mut ::std::os::raw::c_void,
+    pub cl_command_queue: *mut ::std::os::raw::c_void,
+    pub cl_kernel: *mut ::std::os::raw::c_void,
+}
+pub type rknn_gpu_op_context = _rknn_gpu_op_context;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _rknn_custom_op_context {
+    pub target: rknn_target_type,
+    pub internal_ctx: rknn_custom_op_interal_context,
+    pub gpu_ctx: rknn_gpu_op_context,
+    pub priv_data: *mut ::std::os::raw::c_void,
+}
+pub type rknn_custom_op_context = _rknn_custom_op_context;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _rknn_custom_op_tensor {
+    pub attr: rknn_tensor_attr,
+    pub mem: rknn_tensor_mem,
+}
+pub type rknn_custom_op_tensor = _rknn_custom_op_tensor;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _rknn_custom_op_attr {
+    pub name: [::std::os::raw::c_char; 256usize],
+    pub dtype: rknn_tensor_type,
+    pub n_elems: u32,
+    pub data: *mut ::std::os::raw::c_void,
+}
+pub type rknn_custom_op_attr = _rknn_custom_op_attr;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _rknn_custom_op {
+    pub version: u32,
+    pub target: rknn_target_type,
+    pub op_type: [::std::os::raw::c_char; 256usize],
+    pub cl_kernel_name: [::std::os::raw::c_char; 256usize],
+    pub cl_kernel_source: *mut ::std::os::raw::c_char,
+    pub cl_source_size: u64,
+    pub cl_build_options: [::std::os::raw::c_char; 256usize],
+    #[doc = " The callback function sets that the users need to code"]
+    pub init: ::std::option::Option<
+        unsafe extern "C" fn(
+            op_ctx: *mut rknn_custom_op_context,
+            inputs: *mut rknn_custom_op_tensor,
+            n_inputs: u32,
+            outputs: *mut rknn_custom_op_tensor,
+            n_outputs: u32,
+        ) -> ::std::os::raw::c_int,
+    >,
+    pub prepare: ::std::option::Option<
+        unsafe extern "C" fn(
+            op_ctx: *mut rknn_custom_op_context,
+            inputs: *mut rknn_custom_op_tensor,
+            n_inputs: u32,
+            outputs: *mut rknn_custom_op_tensor,
+            n_outputs: u32,
+        ) -> ::std::os::raw::c_int,
+    >,
+    pub compute: ::std::option::Option<
+        unsafe extern "C" fn(
+            op_ctx: *mut rknn_custom_op_context,
+            inputs: *mut rknn_custom_op_tensor,
+            n_inputs: u32,
+            outputs: *mut rknn_custom_op_tensor,
+            n_outputs: u32,
+        ) -> ::std::os::raw::c_int,
+    >,
+    pub compute_native: ::std::option::Option<
+        unsafe extern "C" fn(
+            op_ctx: *mut rknn_custom_op_context,
+            inputs: *mut rknn_custom_op_tensor,
+            n_inputs: u32,
+            outputs: *mut rknn_custom_op_tensor,
+            n_outputs: u32,
+        ) -> ::std::os::raw::c_int,
+    >,
+    pub destroy: ::std::option::Option<
+        unsafe extern "C" fn(op_ctx: *mut rknn_custom_op_context) -> ::std::os::raw::c_int,
+    >,
+}
+pub type rknn_custom_op = _rknn_custom_op;
+unsafe extern "C" {
+    pub fn rknn_register_custom_ops(
+        ctx: rknn_context,
+        op: *mut rknn_custom_op,
+        custom_op_num: u32,
+    ) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn rknn_custom_op_get_op_attr(
+        op_ctx: *mut rknn_custom_op_context,
+        attr_name: *const ::std::os::raw::c_char,
+        op_attr: *mut rknn_custom_op_attr,
+    );
+}

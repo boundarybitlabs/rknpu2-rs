@@ -1,5 +1,5 @@
 [package]
-name = "rknpu2"
+name = "rknpu2-sys"
 version = "0.0.1"
 edition = "2024"
 

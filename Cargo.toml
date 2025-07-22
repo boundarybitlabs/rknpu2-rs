@@ -1,5 +1,5 @@
 [workspace]
 members = [
-    "crates/rknpu2",
+    "crates/rknpu2-sys",
 ]
 resolver = "3"
