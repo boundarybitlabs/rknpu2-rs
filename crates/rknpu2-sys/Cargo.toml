@@ -19,3 +19,4 @@ docs = ["rv110x", "rk2118", "rk35xx", "rk3576"]
 
 [package.metadata.docs.rs]
 features = ["docs"]
+rustc-args = ["--cfg", "docsrs"]
