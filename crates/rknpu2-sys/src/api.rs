@@ -151,18 +151,40 @@ pub struct _rknn_input_range {
     pub n_dims: u32,
 }
 pub type rknn_input_range = _rknn_input_range;
+
+#[cfg_attr(
+    feature = "docs",
+    doc(cfg(any(feature = "rk35xx", feature = "rk3576")))
+)]
+#[cfg(any(feature = "rk35xx", feature = "rk3576"))]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _rknn_perf_detail {
     pub perf_data: *mut ::std::os::raw::c_char,
     pub data_len: u64,
 }
+#[cfg_attr(
+    feature = "docs",
+    doc(cfg(any(feature = "rk35xx", feature = "rk3576")))
+)]
+#[cfg(any(feature = "rk35xx", feature = "rk3576"))]
 pub type rknn_perf_detail = _rknn_perf_detail;
+
+#[cfg_attr(
+    feature = "docs",
+    doc(cfg(any(feature = "rk35xx", feature = "rk3576")))
+)]
+#[cfg(any(feature = "rk35xx", feature = "rk3576"))]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _rknn_perf_run {
     pub run_duration: i64,
 }
+#[cfg_attr(
+    feature = "docs",
+    doc(cfg(any(feature = "rk35xx", feature = "rk3576")))
+)]
+#[cfg(any(feature = "rk35xx", feature = "rk3576"))]
 pub type rknn_perf_run = _rknn_perf_run;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -279,6 +301,11 @@ unsafe extern "C" {
         extend: *mut rknn_init_extend,
     ) -> ::std::os::raw::c_int;
 }
+#[cfg_attr(
+    feature = "docs",
+    doc(cfg(any(feature = "rk35xx", feature = "rk3576")))
+)]
+#[cfg(any(feature = "rk35xx", feature = "rk3576"))]
 unsafe extern "C" {
     pub fn rknn_dup_context(
         context_in: *mut rknn_context,
@@ -296,6 +323,11 @@ unsafe extern "C" {
         size: u32,
     ) -> ::std::os::raw::c_int;
 }
+#[cfg_attr(
+    feature = "docs",
+    doc(cfg(any(feature = "rk35xx", feature = "rk3576")))
+)]
+#[cfg(any(feature = "rk35xx", feature = "rk3576"))]
 unsafe extern "C" {
     pub fn rknn_inputs_set(
         context: rknn_context,
@@ -303,12 +335,18 @@ unsafe extern "C" {
         inputs: *mut rknn_input,
     ) -> ::std::os::raw::c_int;
 }
+
+#[cfg(feature = "rk3576")]
+#[cfg_attr(feature = "docs", doc(cfg(feature = "rk3576")))]
 unsafe extern "C" {
     pub fn rknn_set_batch_core_num(
         context: rknn_context,
         core_num: ::std::os::raw::c_int,
     ) -> ::std::os::raw::c_int;
 }
+
+#[cfg(feature = "rk3576")]
+#[cfg_attr(feature = "docs", doc(cfg(feature = "rk3576")))]
 unsafe extern "C" {
     pub fn rknn_set_core_mask(
         context: rknn_context,
@@ -318,9 +356,11 @@ unsafe extern "C" {
 unsafe extern "C" {
     pub fn rknn_run(context: rknn_context, extend: *mut rknn_run_extend) -> ::std::os::raw::c_int;
 }
-unsafe extern "C" {
-    pub fn rknn_wait(context: rknn_context, extend: *mut rknn_run_extend) -> ::std::os::raw::c_int;
-}
+#[cfg_attr(
+    feature = "docs",
+    doc(cfg(any(feature = "rk35xx", feature = "rk3576")))
+)]
+#[cfg(any(feature = "rk35xx", feature = "rk3576"))]
 unsafe extern "C" {
     pub fn rknn_outputs_get(
         context: rknn_context,
@@ -329,6 +369,11 @@ unsafe extern "C" {
         extend: *mut rknn_output_extend,
     ) -> ::std::os::raw::c_int;
 }
+#[cfg_attr(
+    feature = "docs",
+    doc(cfg(any(feature = "rk35xx", feature = "rk3576")))
+)]
+#[cfg(any(feature = "rk35xx", feature = "rk3576"))]
 unsafe extern "C" {
     pub fn rknn_outputs_release(
         context: rknn_context,
@@ -344,6 +389,11 @@ unsafe extern "C" {
         size: u32,
     ) -> *mut rknn_tensor_mem;
 }
+#[cfg_attr(
+    feature = "docs",
+    doc(cfg(any(feature = "rk35xx", feature = "rk3576", feature = "rv110x")))
+)]
+#[cfg(any(feature = "rk35xx", feature = "rk3576", feature = "rv110x"))]
 unsafe extern "C" {
     pub fn rknn_create_mem_from_fd(
         ctx: rknn_context,
@@ -354,18 +404,11 @@ unsafe extern "C" {
     ) -> *mut rknn_tensor_mem;
 }
 unsafe extern "C" {
-    pub fn rknn_create_mem_from_mb_blk(
-        ctx: rknn_context,
-        mb_blk: *mut ::std::os::raw::c_void,
-        offset: i32,
-    ) -> *mut rknn_tensor_mem;
-}
-unsafe extern "C" {
     pub fn rknn_create_mem(ctx: rknn_context, size: u32) -> *mut rknn_tensor_mem;
 }
 unsafe extern "C" {
     pub fn rknn_create_mem2(ctx: rknn_context, size: u64, alloc_flags: u64)
-        -> *mut rknn_tensor_mem;
+    -> *mut rknn_tensor_mem;
 }
 unsafe extern "C" {
     pub fn rknn_destroy_mem(ctx: rknn_context, mem: *mut rknn_tensor_mem) -> ::std::os::raw::c_int;
@@ -382,6 +425,12 @@ unsafe extern "C" {
         mem: *mut rknn_tensor_mem,
     ) -> ::std::os::raw::c_int;
 }
+
+#[cfg_attr(
+    feature = "docs",
+    doc(cfg(any(feature = "rk35xx", feature = "rk3576")))
+)]
+#[cfg(any(feature = "rk35xx", feature = "rk3576"))]
 unsafe extern "C" {
     pub fn rknn_set_io_mem(
         ctx: rknn_context,
@@ -395,6 +444,11 @@ unsafe extern "C" {
         attr: *mut rknn_tensor_attr,
     ) -> ::std::os::raw::c_int;
 }
+#[cfg_attr(
+    feature = "docs",
+    doc(cfg(any(feature = "rk35xx", feature = "rk3576")))
+)]
+#[cfg(any(feature = "rk35xx", feature = "rk3576"))]
 unsafe extern "C" {
     pub fn rknn_set_input_shapes(
         ctx: rknn_context,
@@ -495,6 +549,11 @@ pub struct rknn_matmul_info_t {
     pub reserved: [i8; 34usize],
 }
 pub type rknn_matmul_info = rknn_matmul_info_t;
+#[cfg_attr(
+    feature = "docs",
+    doc(cfg(any(feature = "rk35xx", feature = "rk3576")))
+)]
+#[cfg(any(feature = "rk35xx", feature = "rk3576"))]
 unsafe extern "C" {
     pub fn rknn_matmul_create(
         ctx: *mut rknn_matmul_ctx,
@@ -502,6 +561,12 @@ unsafe extern "C" {
         io_attr: *mut rknn_matmul_io_attr,
     ) -> ::std::os::raw::c_int;
 }
+
+#[cfg_attr(
+    feature = "docs",
+    doc(cfg(any(feature = "rk35xx", feature = "rk3576")))
+)]
+#[cfg(any(feature = "rk35xx", feature = "rk3576"))]
 unsafe extern "C" {
     pub fn rknn_matmul_create_dynamic_shape(
         ctx: *mut rknn_matmul_ctx,
@@ -511,6 +576,11 @@ unsafe extern "C" {
         io_attrs: *mut rknn_matmul_io_attr,
     ) -> ::std::os::raw::c_int;
 }
+#[cfg_attr(
+    feature = "docs",
+    doc(cfg(any(feature = "rk35xx", feature = "rk3576")))
+)]
+#[cfg(any(feature = "rk35xx", feature = "rk3576"))]
 unsafe extern "C" {
     pub fn rknn_matmul_set_io_mem(
         ctx: rknn_matmul_ctx,
@@ -518,18 +588,32 @@ unsafe extern "C" {
         attr: *mut rknn_matmul_tensor_attr,
     ) -> ::std::os::raw::c_int;
 }
+#[cfg(feature = "rk3576")]
+#[cfg_attr(feature = "docs", doc(cfg(feature = "rk3576")))]
 unsafe extern "C" {
     pub fn rknn_matmul_set_core_mask(
         context: rknn_matmul_ctx,
         core_mask: rknn_core_mask,
     ) -> ::std::os::raw::c_int;
 }
+
+#[cfg_attr(
+    feature = "docs",
+    doc(cfg(any(feature = "rk35xx", feature = "rk3576")))
+)]
+#[cfg(any(feature = "rk35xx", feature = "rk3576"))]
 unsafe extern "C" {
     pub fn rknn_matmul_set_quant_params(
         context: rknn_matmul_ctx,
         params: *mut rknn_quant_params,
     ) -> ::std::os::raw::c_int;
 }
+
+#[cfg_attr(
+    feature = "docs",
+    doc(cfg(any(feature = "rk35xx", feature = "rk3576")))
+)]
+#[cfg(any(feature = "rk35xx", feature = "rk3576"))]
 unsafe extern "C" {
     pub fn rknn_matmul_get_quant_params(
         ctx: rknn_matmul_ctx,
@@ -537,18 +621,41 @@ unsafe extern "C" {
         scale: *mut f32,
     ) -> ::std::os::raw::c_int;
 }
+
+#[cfg_attr(
+    feature = "docs",
+    doc(cfg(any(feature = "rk35xx", feature = "rk3576")))
+)]
+#[cfg(any(feature = "rk35xx", feature = "rk3576"))]
 unsafe extern "C" {
     pub fn rknn_matmul_set_dynamic_shape(
         ctx: rknn_matmul_ctx,
         shape: *mut rknn_matmul_shape,
     ) -> ::std::os::raw::c_int;
 }
+#[cfg_attr(
+    feature = "docs",
+    doc(cfg(any(feature = "rk35xx", feature = "rk3576")))
+)]
+#[cfg(any(feature = "rk35xx", feature = "rk3576"))]
 unsafe extern "C" {
     pub fn rknn_matmul_run(ctx: rknn_matmul_ctx) -> ::std::os::raw::c_int;
 }
+
+#[cfg_attr(
+    feature = "docs",
+    doc(cfg(any(feature = "rk35xx", feature = "rk3576")))
+)]
+#[cfg(any(feature = "rk35xx", feature = "rk3576"))]
 unsafe extern "C" {
     pub fn rknn_matmul_destroy(ctx: rknn_matmul_ctx) -> ::std::os::raw::c_int;
 }
+
+#[cfg_attr(
+    feature = "docs",
+    doc(cfg(any(feature = "rk35xx", feature = "rk3576")))
+)]
+#[cfg(any(feature = "rk35xx", feature = "rk3576"))]
 unsafe extern "C" {
     pub fn rknn_B_normal_layout_to_native_layout(
         B_input: *mut ::std::os::raw::c_void,
@@ -651,6 +758,12 @@ pub struct _rknn_custom_op {
     >,
 }
 pub type rknn_custom_op = _rknn_custom_op;
+
+#[cfg_attr(
+    feature = "docs",
+    doc(cfg(any(feature = "rk35xx", feature = "rk3576")))
+)]
+#[cfg(any(feature = "rk35xx", feature = "rk3576"))]
 unsafe extern "C" {
     pub fn rknn_register_custom_ops(
         ctx: rknn_context,
@@ -658,6 +771,12 @@ unsafe extern "C" {
         custom_op_num: u32,
     ) -> ::std::os::raw::c_int;
 }
+
+#[cfg_attr(
+    feature = "docs",
+    doc(cfg(any(feature = "rk35xx", feature = "rk3576")))
+)]
+#[cfg(any(feature = "rk35xx", feature = "rk3576"))]
 unsafe extern "C" {
     pub fn rknn_custom_op_get_op_attr(
         op_ctx: *mut rknn_custom_op_context,
