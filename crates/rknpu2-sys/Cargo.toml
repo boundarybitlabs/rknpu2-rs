@@ -8,7 +8,7 @@ license = "MIT OR Apache-2.0"
 documentation = "https://docs.rs/rknpu2-sys"
 
 [dependencies]
-libloading = { version = "0.8.8", optional = true }
+libloading = { version = "0.9", optional = true }
 
 
 [features]
