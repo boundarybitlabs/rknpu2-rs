@@ -9,4 +9,4 @@ documentation = "https://docs.rs/rktensor"
 
 [dependencies]
 half = { workspace = true }
-image = "0.25.6"
+image = "0.25.9"
