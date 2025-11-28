@@ -10,8 +10,14 @@ use rknpu2_sys::{
 use std::ffi::c_char;
 use {
     rknpu2_sys::{
-        rknn_context, rknn_mem_sync_mode, rknn_query_cmd, rknn_run_extend, rknn_tensor_attr,
-        rknn_tensor_mem,
+        RKNN_FLAG_ASYNC_MASK, RKNN_FLAG_COLLECT_MODEL_INFO_ONLY, RKNN_FLAG_COLLECT_PERF_MASK,
+        RKNN_FLAG_DISABLE_FLUSH_INPUT_MEM_CACHE, RKNN_FLAG_DISABLE_FLUSH_OUTPUT_MEM_CACHE,
+        RKNN_FLAG_DISABLE_PROC_HIGH_PRIORITY, RKNN_FLAG_ENABLE_SRAM,
+        RKNN_FLAG_EXECUTE_FALLBACK_PRIOR_DEVICE_GPU, RKNN_FLAG_FENCE_IN_OUTSIDE,
+        RKNN_FLAG_FENCE_OUT_OUTSIDE, RKNN_FLAG_INTERNAL_ALLOC_OUTSIDE, RKNN_FLAG_MEM_ALLOC_OUTSIDE,
+        RKNN_FLAG_MODEL_BUFFER_ZERO_COPY, RKNN_FLAG_PRIOR_HIGH, RKNN_FLAG_PRIOR_LOW,
+        RKNN_FLAG_PRIOR_MEDIUM, RKNN_FLAG_SHARE_SRAM, RKNN_FLAG_SHARE_WEIGHT_MEM, rknn_context,
+        rknn_mem_sync_mode, rknn_query_cmd, rknn_run_extend, rknn_tensor_attr, rknn_tensor_mem,
     },
     std::ffi::{c_int, c_void},
 };
@@ -336,4 +342,137 @@ pub trait RKNNAPI {
         attr_name: *const c_char,
         op_attr: *mut rknn_custom_op_attr,
     ) -> Result<(), Error>;
+}
+
+use bitflags::bitflags;
+
+bitflags! {
+    /// Flags passed to `rknn_init` controlling execution behavior.
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+    pub struct RknnInitFlags: u32 {
+        const ASYNC_MASK                     = RKNN_FLAG_ASYNC_MASK;
+        const COLLECT_MODEL_INFO_ONLY        = RKNN_FLAG_COLLECT_MODEL_INFO_ONLY;
+        const COLLECT_PERF_MASK              = RKNN_FLAG_COLLECT_PERF_MASK;
+        const DISABLE_FLUSH_INPUT_MEM_CACHE  = RKNN_FLAG_DISABLE_FLUSH_INPUT_MEM_CACHE;
+        const DISABLE_FLUSH_OUTPUT_MEM_CACHE = RKNN_FLAG_DISABLE_FLUSH_OUTPUT_MEM_CACHE;
+        const DISABLE_PROC_HIGH_PRIORITY     = RKNN_FLAG_DISABLE_PROC_HIGH_PRIORITY;
+        const ENABLE_SRAM                    = RKNN_FLAG_ENABLE_SRAM;
+        const EXECUTE_FALLBACK_PRIOR_DEVICE_GPU = RKNN_FLAG_EXECUTE_FALLBACK_PRIOR_DEVICE_GPU;
+        const FENCE_IN_OUTSIDE               = RKNN_FLAG_FENCE_IN_OUTSIDE;
+        const FENCE_OUT_OUTSIDE              = RKNN_FLAG_FENCE_OUT_OUTSIDE;
+        const INTERNAL_ALLOC_OUTSIDE         = RKNN_FLAG_INTERNAL_ALLOC_OUTSIDE;
+        const MEM_ALLOC_OUTSIDE              = RKNN_FLAG_MEM_ALLOC_OUTSIDE;
+        const MODEL_BUFFER_ZERO_COPY         = RKNN_FLAG_MODEL_BUFFER_ZERO_COPY;
+        const PRIOR_HIGH                     = RKNN_FLAG_PRIOR_HIGH;
+        const PRIOR_MEDIUM                   = RKNN_FLAG_PRIOR_MEDIUM;
+        const PRIOR_LOW                      = RKNN_FLAG_PRIOR_LOW;
+        const SHARE_SRAM                     = RKNN_FLAG_SHARE_SRAM;
+        const SHARE_WEIGHT_MEM               = RKNN_FLAG_SHARE_WEIGHT_MEM;
+    }
+}
+
+impl From<RknnInitFlags> for u32 {
+    fn from(flags: RknnInitFlags) -> Self {
+        flags.bits()
+    }
+}
+
+impl From<u32> for RknnInitFlags {
+    fn from(bits: u32) -> Self {
+        Self::from_bits_truncate(bits)
+    }
+}
+
+impl RknnInitFlags {
+    /// Start from "no flags".
+    pub const fn builder() -> Self {
+        Self::empty()
+    }
+
+    pub const fn with_async(self) -> Self {
+        self.union(Self::ASYNC_MASK)
+    }
+
+    pub const fn with_model_info_only(self) -> Self {
+        self.union(Self::COLLECT_MODEL_INFO_ONLY)
+    }
+
+    pub const fn with_perf_collection(self) -> Self {
+        self.union(Self::COLLECT_PERF_MASK)
+    }
+
+    pub const fn with_zero_copy_model_buffer(self) -> Self {
+        self.union(Self::MODEL_BUFFER_ZERO_COPY)
+    }
+
+    pub const fn with_share_sram(self) -> Self {
+        self.union(Self::SHARE_SRAM)
+    }
+
+    pub const fn with_share_weight_mem(self) -> Self {
+        self.union(Self::SHARE_WEIGHT_MEM)
+    }
+
+    pub const fn with_external_mem_alloc(self) -> Self {
+        self.union(Self::MEM_ALLOC_OUTSIDE)
+    }
+
+    pub const fn with_external_internal_alloc(self) -> Self {
+        self.union(Self::INTERNAL_ALLOC_OUTSIDE)
+    }
+
+    pub const fn with_no_input_cache_flush(self) -> Self {
+        self.union(Self::DISABLE_FLUSH_INPUT_MEM_CACHE)
+    }
+
+    pub const fn with_no_output_cache_flush(self) -> Self {
+        self.union(Self::DISABLE_FLUSH_OUTPUT_MEM_CACHE)
+    }
+
+    pub const fn with_no_proc_high_priority(self) -> Self {
+        self.union(Self::DISABLE_PROC_HIGH_PRIORITY)
+    }
+
+    pub const fn with_enable_sram(self) -> Self {
+        self.union(Self::ENABLE_SRAM)
+    }
+
+    pub const fn with_gpu_fallback(self) -> Self {
+        self.union(Self::EXECUTE_FALLBACK_PRIOR_DEVICE_GPU)
+    }
+
+    pub const fn with_fence_in_outside(self) -> Self {
+        self.union(Self::FENCE_IN_OUTSIDE)
+    }
+
+    pub const fn with_fence_out_outside(self) -> Self {
+        self.union(Self::FENCE_OUT_OUTSIDE)
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Priority {
+    Low,
+    Medium,
+    High,
+}
+
+impl Priority {
+    pub const fn as_flags(self) -> RknnInitFlags {
+        match self {
+            Priority::Low => RknnInitFlags::PRIOR_LOW,
+            Priority::Medium => RknnInitFlags::PRIOR_MEDIUM,
+            Priority::High => RknnInitFlags::PRIOR_HIGH,
+        }
+    }
+}
+
+impl RknnInitFlags {
+    /// Clear existing priority bits and set a new one.
+    pub fn with_priority(self, priority: Priority) -> Self {
+        let cleared = self
+            & !(RknnInitFlags::PRIOR_LOW | RknnInitFlags::PRIOR_MEDIUM | RknnInitFlags::PRIOR_HIGH);
+
+        cleared | priority.as_flags()
+    }
 }

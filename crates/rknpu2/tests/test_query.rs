@@ -2,6 +2,7 @@
 use rknpu2::utils;
 use rknpu2::{
     RKNN,
+    api::{Priority, RknnInitFlags},
     query::{
         InputAttr, InputOutputNum, NativeInputAttr, NativeNC1HWC2InputAttr,
         NativeNC1HWC2OutputAttr, NativeNHWCInputAttr, NativeNHWCOutputAttr, NativeOutputAttr,
@@ -18,7 +19,11 @@ use rknpu2::api::linked::LinkedAPI;
 #[cfg(not(feature = "libloading"))]
 fn get_rknn() -> RKNN<LinkedAPI> {
     let mut model_data = MODEL_DATA.to_vec();
-    let rknn = RKNN::new(&mut model_data, 0).unwrap();
+    let rknn = RKNN::new(
+        &mut model_data,
+        RknnInitFlags::empty().with_priority(Priority::High),
+    )
+    .unwrap();
     rknn
 }
 
@@ -33,7 +38,7 @@ fn get_rknn() -> RKNN<RuntimeAPI> {
             .next()
             .expect("No RKNN library found. Please install librknnrt.so."),
         &mut model_data,
-        0,
+        RknnInitFlags::empty().with_priority(Priority::High),
     )
     .unwrap();
     rknn

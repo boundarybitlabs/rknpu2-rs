@@ -1,5 +1,8 @@
 use {
-    crate::{RKNN, api::RKNNAPI},
+    crate::{
+        RKNN,
+        api::{RKNNAPI, RknnInitFlags},
+    },
     rknpu2_sys::{rknn, rknn_context},
     std::{
         ffi::{OsStr, c_void},
@@ -424,7 +427,7 @@ impl RKNN<RuntimeAPI> {
     pub fn new_with_library<P: AsRef<OsStr>>(
         path: P,
         model_data: &mut [u8],
-        flags: u32,
+        flags: RknnInitFlags,
     ) -> Result<Self, crate::Error> {
         let rknn = unsafe { rknn::new(path).unwrap() };
         let mut ctx: rknn_context = 0;
@@ -433,7 +436,7 @@ impl RKNN<RuntimeAPI> {
                 &mut ctx as *mut _,
                 model_data.as_mut_ptr() as *mut c_void,
                 model_data.len() as u32,
-                flags,
+                flags.into(),
                 ptr::null_mut(),
             )
         };

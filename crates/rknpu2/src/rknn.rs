@@ -122,19 +122,11 @@ impl<A: RKNNAPI> RKNN<A> {
         Ok(())
     }
 
-    pub const NPU_CORE_0: u32 = RKNN_NPU_CORE_0;
-    pub const NPU_CORE_1: u32 = RKNN_NPU_CORE_1;
-    pub const NPU_CORE_2: u32 = RKNN_NPU_CORE_2;
-    pub const NPU_CORE_ALL: u32 = RKNN_NPU_CORE_ALL;
-    pub const NPU_CORE_0_1: u32 = RKNN_NPU_CORE_0_1;
-    pub const NPU_CORE_0_1_2: u32 = RKNN_NPU_CORE_0_1_2;
-    pub const NPU_CORE_AUTO: u32 = RKNN_NPU_CORE_AUTO;
-
     #[cfg(feature = "rk3576")]
     #[cfg_attr(feature = "docs", doc(cfg(feature = "rk3576")))]
-    pub fn set_core_mask(&self, mask: u32) -> Result<(), Error> {
+    pub fn set_core_mask(&self, mask: NpuCores) -> Result<(), Error> {
         unsafe {
-            self.api.set_core_mask(self.ctx, mask)?;
+            self.api.set_core_mask(self.ctx, mask.into())?;
         }
 
         Ok(())
@@ -146,5 +138,81 @@ impl<A: RKNNAPI> Drop for RKNN<A> {
         unsafe {
             self.api.destroy(self.ctx).unwrap();
         }
+    }
+}
+
+use bitflags::bitflags;
+
+bitflags! {
+    /// Flags for specifying which NPU cores to use.
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+    pub struct NpuCores: u32 {
+        // Single cores
+        const CORE0 = RKNN_NPU_CORE_0;
+        const CORE1 = RKNN_NPU_CORE_1;
+        const CORE2 = RKNN_NPU_CORE_2;
+
+        // Predefined combinations from the C API
+        const CORE0_1    = RKNN_NPU_CORE_0_1;
+        const CORE0_1_2  = RKNN_NPU_CORE_0_1_2;
+
+        // "All cores" bitmask that C defines as 0xFFFF (not just 0b111).
+        const ALL        = RKNN_NPU_CORE_ALL;
+    }
+}
+
+impl NpuCores {
+    /// Let the driver choose cores automatically.
+    pub const fn auto() -> Self {
+        // This is equivalent to `Self::empty()`
+        // but documents the intent.
+        NpuCores::from_bits_truncate(RKNN_NPU_CORE_AUTO)
+    }
+
+    /// Start building from "auto"/empty.
+    pub const fn builder() -> Self {
+        Self::auto()
+    }
+
+    /// Add core 0.
+    pub const fn with_core0(self) -> Self {
+        self.union(Self::CORE0)
+    }
+
+    /// Add core 1.
+    pub const fn with_core1(self) -> Self {
+        self.union(Self::CORE1)
+    }
+
+    /// Add core 2.
+    pub const fn with_core2(self) -> Self {
+        self.union(Self::CORE2)
+    }
+
+    /// Convenience: all three cores (0,1,2) only.
+    /// (This is 0b111, not 0xFFFF).
+    pub const fn cores_0_1_2() -> Self {
+        Self::CORE0_1_2
+    }
+
+    /// Is this the "auto" / "no specific cores requested" mode?
+    pub const fn is_auto(self) -> bool {
+        self.bits() == RKNN_NPU_CORE_AUTO
+    }
+}
+
+// Optional: ergonomic conversions
+impl From<NpuCores> for u32 {
+    #[inline]
+    fn from(mask: NpuCores) -> u32 {
+        mask.bits()
+    }
+}
+
+impl From<u32> for NpuCores {
+    #[inline]
+    fn from(bits: u32) -> NpuCores {
+        // Truncate unknown bits instead of panicking.
+        NpuCores::from_bits_truncate(bits)
     }
 }
