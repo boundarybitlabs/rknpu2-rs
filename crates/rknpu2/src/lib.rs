@@ -19,6 +19,9 @@ pub mod tensor;
 /// Utility functions
 pub mod utils;
 
+/// Handling memory externally
+pub mod mem;
+
 pub use {error::Error, rknn::RKNN};
 
 /// Trait and implementation for RKNN

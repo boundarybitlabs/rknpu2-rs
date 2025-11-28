@@ -37,6 +37,7 @@ pub enum Error {
         expected: usize,
         actual: usize,
     },
+    NullPointer,
 }
 
 impl std::error::Error for Error {}
@@ -74,6 +75,9 @@ impl std::fmt::Display for Error {
             }
             Error::SizeMismatch { expected, actual } => {
                 write!(f, "Size mismatch: expected {}, actual {}", expected, actual)
+            }
+            Error::NullPointer => {
+                write!(f, "Null pointer error")
             }
         }
     }

@@ -1,3 +1,5 @@
+use std::mem::MaybeUninit;
+
 use rknpu2_sys::{
     _rknn_core_mask::{
         RKNN_NPU_CORE_0, RKNN_NPU_CORE_0_1, RKNN_NPU_CORE_0_1_2, RKNN_NPU_CORE_1, RKNN_NPU_CORE_2,
@@ -16,7 +18,8 @@ use {
     crate::{
         Error,
         api::RKNNAPI,
-        query::{Query, QueryWithInput},
+        mem::TensorMem,
+        query::{InputAttr, Io, OutputAttr, Query, QueryWithInput},
     },
     std::{ffi::c_void, ptr},
 };
@@ -69,6 +72,40 @@ impl<A: RKNNAPI> RKNN<A> {
         if ret != 0 {
             return Err(ret.into());
         }
+        Ok(())
+    }
+
+    pub fn create_mem2(&self, size: u64, flags: MemAllocFlags) -> Result<TensorMem, Error> {
+        let flags_u32: u32 = flags.into();
+
+        let ret: *mut crate::rknpu2_sys::rknn_tensor_mem =
+            unsafe { self.api.create_mem2(self.ctx, size, flags_u32.into())? };
+
+        if ret.is_null() {
+            return Err(Error::NullPointer);
+        }
+
+        Ok(TensorMem { mem: ret })
+    }
+
+    pub fn set_io_mem(&self, mem: &TensorMem, io: Io, index: u32) -> Result<(), Error> {
+        match io {
+            Io::Input => {
+                let mut attr = self.query_with_input::<InputAttr>(index)?;
+                let ret = unsafe { self.api.set_io_mem(self.ctx, mem.mem, &mut attr.inner)? };
+                if ret != 0 {
+                    return Err(ret.into());
+                }
+            }
+            Io::Output => {
+                let mut attr = self.query_with_input::<OutputAttr>(index)?;
+                let ret = unsafe { self.api.set_io_mem(self.ctx, mem.mem, &mut attr.inner)? };
+                if ret != 0 {
+                    return Err(ret.into());
+                }
+            }
+        };
+
         Ok(())
     }
 
