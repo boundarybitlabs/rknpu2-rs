@@ -1,7 +1,7 @@
 use {
     image::ImageReader,
     itertools::Itertools,
-    rknpu2::RKNN,
+    rknpu2::{RKNN, api::RknnInitFlags},
     std::{
         collections::BTreeMap,
         io::{BufRead, BufReader},
@@ -37,6 +37,7 @@ fn preprocess_image(img: &image::RgbImage) -> Vec<i8> {
 #[cfg(any(feature = "rk3576", feature = "rk35xx"))]
 fn main() {
     use rknpu2::{
+        api::Priority,
         io::{
             buffer::{BufMutView, BufView},
             input::Input,
@@ -62,7 +63,7 @@ fn main() {
 
     let quantized_input = preprocess_image(&img);
 
-    let model = get_rknn(0);
+    let model = get_rknn(RknnInitFlags::empty().with_priority(Priority::High));
 
     let input = Input::new(
         0,
@@ -114,7 +115,7 @@ fn main() {
 use rknpu2::api::linked::LinkedAPI;
 
 #[cfg(not(feature = "libloading"))]
-fn get_rknn(flag: u32) -> RKNN<LinkedAPI> {
+fn get_rknn(flag: RknnInitFlags) -> RKNN<LinkedAPI> {
     let mut model_data = MODEL_DATA.to_vec();
     let rknn = RKNN::new(&mut model_data, flag).unwrap();
     rknn
@@ -124,7 +125,7 @@ fn get_rknn(flag: u32) -> RKNN<LinkedAPI> {
 use rknpu2::api::runtime::RuntimeAPI;
 
 #[cfg(feature = "libloading")]
-fn get_rknn(flag: u32) -> RKNN<RuntimeAPI> {
+fn get_rknn(flag: RknnInitFlags) -> RKNN<RuntimeAPI> {
     use rknpu2::utils::find_rknn_library;
 
     let mut model_data = MODEL_DATA.to_vec();

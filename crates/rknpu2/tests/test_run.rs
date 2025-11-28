@@ -1,4 +1,4 @@
-use rknpu2::RKNN;
+use rknpu2::{RKNN, api::RknnInitFlags};
 
 static MODEL_DATA: &[u8] = include_bytes!("./fixtures/mobilenet_v2.rknn");
 
@@ -6,7 +6,7 @@ static MODEL_DATA: &[u8] = include_bytes!("./fixtures/mobilenet_v2.rknn");
 use rknpu2::api::linked::LinkedAPI;
 
 #[cfg(not(feature = "libloading"))]
-fn get_rknn(flag: u32) -> RKNN<LinkedAPI> {
+fn get_rknn(flag: RknnInitFlags) -> RKNN<LinkedAPI> {
     let mut model_data = MODEL_DATA.to_vec();
     let rknn = RKNN::new(&mut model_data, flag).unwrap();
     rknn
@@ -16,7 +16,7 @@ fn get_rknn(flag: u32) -> RKNN<LinkedAPI> {
 use rknpu2::api::runtime::RuntimeAPI;
 
 #[cfg(feature = "libloading")]
-fn get_rknn(flag: u32) -> RKNN<RuntimeAPI> {
+fn get_rknn(flag: RknnInitFlags) -> RKNN<RuntimeAPI> {
     use rknpu2::utils;
 
     let mut model_data = MODEL_DATA.to_vec();
@@ -35,6 +35,7 @@ fn get_rknn(flag: u32) -> RKNN<RuntimeAPI> {
 #[test]
 fn test_run() {
     use rknpu2::{
+        api::Priority,
         io::{
             buffer::{BufMutView, BufView},
             input::Input,
@@ -43,7 +44,7 @@ fn test_run() {
         tensor::{TensorFormat, TensorFormatKind},
     };
 
-    let model = get_rknn(0);
+    let model = get_rknn(RknnInitFlags::empty().with_priority(Priority::High));
 
     let input_buffer = vec![0i8; 1 * 224 * 224 * 3];
 
@@ -74,20 +75,17 @@ fn test_run() {
 #[cfg(any(feature = "rk3576", feature = "rk35xx"))]
 #[test]
 fn test_perf_detail() {
-    use {
-        rknpu2::{
-            io::{
-                buffer::{BufMutView, BufView},
-                input::Input,
-                output::{Output, OutputKind},
-            },
-            query::{PerfDetail, PerfRun},
-            tensor::{TensorFormat, TensorFormatKind},
+    use rknpu2::{
+        io::{
+            buffer::{BufMutView, BufView},
+            input::Input,
+            output::{Output, OutputKind},
         },
-        rknpu2_sys::RKNN_FLAG_COLLECT_PERF_MASK,
+        query::{PerfDetail, PerfRun},
+        tensor::{TensorFormat, TensorFormatKind},
     };
 
-    let model = get_rknn(RKNN_FLAG_COLLECT_PERF_MASK);
+    let model = get_rknn(RknnInitFlags::empty().with_perf_collection());
 
     let input_buffer = vec![0i8; 1 * 3 * 224 * 224];
 

@@ -1,5 +1,8 @@
 use {
-    crate::{Error, RKNN, api::RKNNAPI},
+    crate::{
+        Error, RKNN,
+        api::{RKNNAPI, RknnInitFlags},
+    },
     rknpu2_sys::rknn_context,
     std::{ffi::c_void, ptr},
 };
@@ -431,14 +434,14 @@ impl RKNNAPI for LinkedAPI {
 }
 
 impl RKNN<LinkedAPI> {
-    pub fn new(model_data: &mut [u8], flags: u32) -> Result<Self, Error> {
+    pub fn new(model_data: &mut [u8], flags: RknnInitFlags) -> Result<Self, Error> {
         let mut ctx: rknn_context = 0;
         let ret = unsafe {
             rknpu2_sys::rknn_init(
                 &mut ctx as *mut _,
                 model_data.as_mut_ptr() as *mut c_void,
                 model_data.len() as u32,
-                flags,
+                flags.into(),
                 ptr::null_mut(),
             )
         };
