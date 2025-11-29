@@ -1,5 +1,3 @@
-use std::mem::MaybeUninit;
-
 use rknpu2_sys::{
     _rknn_core_mask::{
         RKNN_NPU_CORE_0, RKNN_NPU_CORE_0_1, RKNN_NPU_CORE_0_1_2, RKNN_NPU_CORE_1, RKNN_NPU_CORE_2,
@@ -9,6 +7,7 @@ use rknpu2_sys::{
         RKNN_FLAG_MEMORY_CACHEABLE, RKNN_FLAG_MEMORY_FLAGS_DEFAULT, RKNN_FLAG_MEMORY_NON_CACHEABLE,
         RKNN_FLAG_MEMORY_TRY_ALLOC_SRAM,
     },
+    _rknn_mem_sync_mode::RKNN_MEMORY_SYNC_TO_DEVICE,
     rknn_context,
 };
 
@@ -106,6 +105,17 @@ impl<A: RKNNAPI> RKNN<A> {
             }
         };
 
+        Ok(())
+    }
+
+    pub fn mem_sync(&self, mem: &TensorMem) -> Result<(), Error> {
+        let ret = unsafe {
+            self.api
+                .mem_sync(self.ctx, mem.mem, RKNN_MEMORY_SYNC_TO_DEVICE)?
+        };
+        if ret != 0 {
+            return Err(ret.into());
+        }
         Ok(())
     }
 
