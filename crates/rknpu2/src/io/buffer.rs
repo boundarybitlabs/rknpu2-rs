@@ -164,4 +164,26 @@ impl RknnBuffer {
     pub fn new(ptr: *mut c_void, size: usize) -> Self {
         RknnBuffer { ptr, size }
     }
+
+    pub fn len(&self) -> usize {
+        self.size
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.size == 0
+    }
+
+    pub fn as_mut_ptr(&self) -> *mut c_void {
+        self.ptr
+    }
+
+    pub fn as_slice<T>(&self) -> &[T] {
+        let len = self.size / std::mem::size_of::<T>();
+        unsafe { std::slice::from_raw_parts(self.ptr as *const T, len) }
+    }
+
+    pub fn as_mut_slice<T>(&mut self) -> &mut [T] {
+        let len = self.size / std::mem::size_of::<T>();
+        unsafe { std::slice::from_raw_parts_mut(self.ptr as *mut T, len) }
+    }
 }
