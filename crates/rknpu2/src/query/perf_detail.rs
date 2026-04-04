@@ -31,7 +31,7 @@ impl PerfDetail {
         }
 
         let s = unsafe {
-            std::slice::from_raw_parts(self.inner.perf_data, self.inner.data_len as usize)
+            std::slice::from_raw_parts(self.inner.perf_data as *const u8, self.inner.data_len as usize)
         };
         unsafe { std::str::from_utf8_unchecked(s) }
     }
