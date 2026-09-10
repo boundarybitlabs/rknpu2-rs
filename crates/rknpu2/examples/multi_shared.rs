@@ -1,0 +1,208 @@
+use std::thread::JoinHandle;
+use std::time::Instant;
+use {
+    image::ImageReader,
+    itertools::Itertools,
+    rknpu2::{RKNN, api::RknnInitFlags},
+    std::{
+        collections::BTreeMap,
+        io::{BufRead, BufReader},
+    },
+};
+
+static MODEL_DATA: &[u8] = include_bytes!("models/mobilenet_v2.rknn");
+
+static MODEL_OUTPUTS: &str = include_str!("models/mobilenet-synset.txt");
+
+const SCALE: f32 = 0.018658448;
+
+fn preprocess_image(img: &image::RgbImage) -> Vec<i8> {
+    // ImageNet mean and std
+    let mean = [0.485f32, 0.456, 0.406];
+    let std = [0.229f32, 0.224, 0.225];
+
+    let mut result = Vec::with_capacity(224 * 224 * 3);
+    for y in 0..224 {
+        for x in 0..224 {
+            let pixel = img.get_pixel(x, y);
+            for c in 0..3 {
+                let val = pixel[c] as f32 / 255.0;
+                let norm = (val - mean[c]) / std[c];
+                let quant = (norm / SCALE).round();
+                result.push(quant.clamp(-128.0, 127.0) as i8);
+            }
+        }
+    }
+    result
+}
+
+fn infer<T: RKNNAPI>(model: &RKNN<T>, img: &image::RgbImage) {
+    use rknpu2::{
+        io::{
+            buffer::{BufMutView, BufView},
+            input::Input,
+            output::{Output, OutputKind},
+        },
+        tensor::{TensorFormat, TensorFormatKind},
+    };
+
+    let quantized_input = preprocess_image(&img);
+
+    let input = Input::new(
+        0,
+        BufView::I8(&quantized_input),
+        true,
+        TensorFormatKind::NCHW(TensorFormat::NCHW),
+    );
+    model.set_inputs(input).unwrap();
+    model.run().unwrap();
+
+    let mut logits = vec![0.0f32; 1000];
+
+    let output = Output {
+        index: 0,
+        kind: OutputKind::Preallocated {
+            buf: BufMutView::F32(&mut logits),
+            want_float: true,
+        },
+    };
+
+    model.get_outputs(&mut vec![output]).unwrap();
+
+    let softmax_output = softmax(&logits);
+    let top5 = softmax_output
+        .into_iter()
+        .enumerate()
+        .sorted_by(|&(_, a), &(_, b)| b.partial_cmp(&a).unwrap())
+        .take(5)
+        .collect::<Vec<_>>();
+
+    let class_reader = BufReader::with_capacity(512, MODEL_OUTPUTS.as_bytes());
+    let classes: BTreeMap<usize, String> = class_reader
+        .lines()
+        .map(|line| line.unwrap())
+        .enumerate()
+        .collect();
+
+    for (idx, prob) in top5 {
+        println!("Probability: {}", prob);
+
+        if let Some(class_name) = classes.get(&idx) {
+            println!("{}: {}", class_name, idx);
+        }
+    }
+    println!();
+}
+
+#[cfg(any(feature = "rk3576", feature = "rk35xx"))]
+fn main() {
+    use rknpu2::api::Priority;
+    use rknpu2::rknn::NpuCores;
+
+    let img_path = match std::env::args().nth(1) {
+        Some(path) => path,
+        None => {
+            eprintln!("Usage: {} <image_path>", std::env::args().nth(0).unwrap());
+            std::process::exit(1);
+        }
+    };
+
+    let img = ImageReader::open(&img_path)
+        .unwrap()
+        .decode()
+        .unwrap()
+        .resize_exact(224, 224, image::imageops::FilterType::Triangle)
+        .to_rgb8();
+
+    let mut models = Vec::with_capacity(6);
+
+    let main_model = get_rknn(RknnInitFlags::empty().with_priority(Priority::High));
+    main_model.set_core_mask(NpuCores::CORE0).unwrap();
+    models.push(main_model);
+
+    for i in 1..6 {
+        let shared_model = models.get(0).unwrap().clone();
+        // let shared_model = models.get_mut(0).unwrap().dup_shared().unwrap();
+        match i % 3 {
+            0 => {
+                shared_model.set_core_mask(NpuCores::CORE0).unwrap();
+            }
+            1 => {
+                shared_model.set_core_mask(NpuCores::CORE1).unwrap();
+            }
+            2 => {
+                shared_model.set_core_mask(NpuCores::CORE2).unwrap();
+            }
+            _ => {
+                shared_model.set_core_mask(NpuCores::auto()).unwrap();
+            }
+        }
+        models.push(shared_model);
+    }
+
+    let start = Instant::now();
+    let handles: Vec<JoinHandle<_>> = models.into_iter().enumerate().map(|(i, model)| {
+        let img = img.clone();
+        std::thread::spawn(move || {
+            let start = Instant::now();
+            infer(&model, &img);
+            let duration = start.elapsed();
+            (i, duration.as_micros())
+        })
+    }).collect();
+
+    let mut total_duration = 0;
+    for handle in handles.into_iter() {
+        let (i, ts) = handle.join().unwrap();
+        println!("Thread #{}, infer time: {} us\n", i, ts);
+        total_duration += ts;
+    }
+    let duration = start.elapsed();
+    println!(
+        "Total threads: {} us, real: {} us",
+        total_duration,
+        duration.as_micros()
+    );
+}
+
+use rknpu2::api::RKNNAPI;
+#[cfg(not(feature = "libloading"))]
+use rknpu2::api::linked::LinkedAPI;
+
+#[cfg(not(feature = "libloading"))]
+fn get_rknn(flag: RknnInitFlags) -> RKNN<LinkedAPI> {
+    let mut model_data = MODEL_DATA.to_vec();
+    let rknn = RKNN::new(&mut model_data, flag).unwrap();
+    rknn
+}
+
+#[cfg(feature = "libloading")]
+use rknpu2::api::runtime::RuntimeAPI;
+
+#[cfg(feature = "libloading")]
+fn get_rknn(flag: RknnInitFlags) -> RKNN<RuntimeAPI> {
+    use rknpu2::utils::find_rknn_library;
+
+    let mut model_data = MODEL_DATA.to_vec();
+    let rknn = RKNN::new_with_library(
+        find_rknn_library()
+            .next()
+            .expect("No RKNN library found. Please install librknnrt.so."),
+        &mut model_data,
+        flag,
+    )
+    .unwrap();
+    rknn
+}
+
+fn softmax(logits: &[f32]) -> Vec<f32> {
+    let max = logits.iter().cloned().fold(f32::NEG_INFINITY, f32::max);
+    let exp: Vec<f32> = logits.iter().map(|&x| (x - max).exp()).collect();
+    let sum: f32 = exp.iter().sum();
+    exp.into_iter().map(|x| x / sum).collect()
+}
+
+#[cfg(not(any(feature = "rk3576", feature = "rk35xx")))]
+fn main() {
+    println!("mobilenet example requires rk3576 or rk35xx feature");
+}

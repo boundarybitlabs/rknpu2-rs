@@ -20,7 +20,7 @@ use {
 /// Main rknn struct with ability to query the model and run inference.
 pub struct RKNN<A: RKNNAPI> {
     pub(crate) ctx: rknn_context,
-    pub(crate) api: A,
+    pub(crate) api: std::sync::Arc<A>,
 }
 
 impl<A: RKNNAPI> RKNN<A> {
@@ -130,6 +130,40 @@ impl<A: RKNNAPI> RKNN<A> {
         }
 
         Ok(())
+    }
+
+    #[cfg(any(feature = "rk35xx", feature = "rk3576"))]
+    #[cfg_attr(
+        feature = "docs",
+        doc(cfg(any(feature = "rk35xx", feature = "rk3576")))
+    )]
+    pub fn dup_shared(&mut self) -> Result<Self, Error> {
+        let mut ctx: rknn_context = 0;
+
+        unsafe { self.api.dup_context(&mut self.ctx, &mut ctx)? };
+
+        Ok(Self {
+            ctx,
+            api: self.api.clone(),
+        })
+    }
+}
+
+#[cfg(any(feature = "rk35xx", feature = "rk3576"))]
+#[cfg_attr(
+    feature = "docs",
+    doc(cfg(any(feature = "rk35xx", feature = "rk3576")))
+)]
+impl<A: RKNNAPI> Clone for RKNN<A> {
+    fn clone(&self) -> Self {
+        let mut ctx: rknn_context = 0;
+        let self_ctx_ptr = &self.ctx as *const _ as *mut _;
+        unsafe { self.api.dup_context(self_ctx_ptr, &mut ctx).unwrap() };
+
+        Self {
+            ctx,
+            api: self.api.clone(),
+        }
     }
 }
 

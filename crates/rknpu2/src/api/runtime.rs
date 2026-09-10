@@ -445,7 +445,7 @@ impl RKNN<RuntimeAPI> {
         }
         Ok(Self {
             ctx,
-            api: RuntimeAPI { inner: rknn },
+            api: std::sync::Arc::new(RuntimeAPI { inner: rknn }),
         })
     }
 }

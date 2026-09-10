@@ -450,7 +450,7 @@ impl RKNN<LinkedAPI> {
         }
         Ok(Self {
             ctx,
-            api: LinkedAPI,
+            api: std::sync::Arc::new(LinkedAPI),
         })
     }
 }
